@@ -36,11 +36,11 @@
       <div class="dropzone" id="dropzone">
         <div class="dropzone-inner">
           <div class="drop-icon">⇩</div>
-          <p>Drop a document here or click to browse</p>
-          <input type="file" name="document" id="fileInput" required>
+          <p>Drop documents here or click to browse</p>
+          <input type="file" name="documents" id="fileInput" multiple required>
         </div>
       </div>
-      <button type="submit">Scan Document</button>
+      <button type="submit">Scan Documents</button>
     </form>
 
     <div class="supported">
@@ -72,8 +72,18 @@
   dz.addEventListener('drop', e => {
     if (e.dataTransfer && e.dataTransfer.files.length) {
       input.files = e.dataTransfer.files;
+      updateSelection();
     }
   });
+
+  input.addEventListener('change', updateSelection);
+
+  function updateSelection() {
+    const count = input.files.length;
+    dz.querySelector('p').textContent = count
+      ? `${count} document${count === 1 ? '' : 's'} selected`
+      : 'Drop documents here or click to browse';
+  }
 </script>
 </body>
 </html>

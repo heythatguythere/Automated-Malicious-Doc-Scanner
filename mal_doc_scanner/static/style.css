@@ -192,8 +192,95 @@ button:hover {
   font-size: 0.94rem;
 }
 
+details {
+  margin: 12px 0 20px;
+}
+
+summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 700;
+  padding: 8px 0;
+}
+
+.confidence {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  vertical-align: middle;
+}
+
+.confidence-low { background: rgba(122, 162, 255, 0.16); color: #b9caff; }
+.confidence-medium { background: rgba(255, 180, 84, 0.18); color: #ffd28e; }
+.confidence-high { background: rgba(255, 107, 107, 0.18); color: #ffb1b1; }
+
 .report-panel {
   padding: 28px 26px 20px;
+}
+
+.bulk-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin: 22px 0;
+}
+
+.bulk-stat {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(18, 28, 40, 0.72);
+}
+
+.bulk-stat strong { display: block; font-size: 1.35rem; }
+.bulk-stat span { color: var(--muted); font-size: 0.78rem; }
+
+.bulk-table { width: 100%; border-collapse: collapse; }
+.bulk-table th, .bulk-table td {
+  padding: 12px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.bulk-table th { color: var(--muted); font-size: 0.78rem; }
+.bulk-table td { font-size: 0.9rem; }
+.bulk-error { color: #ffb1b1; }
+
+.bulk-report {
+  margin: 12px 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(18, 28, 40, 0.72);
+  overflow: hidden;
+}
+
+.bulk-report summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 15px 16px;
+  color: var(--text);
+}
+
+.bulk-summary-score {
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: right;
+}
+
+.bulk-report-body {
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 640px) {
+  .bulk-report summary { align-items: flex-start; flex-direction: column; gap: 6px; }
+  .bulk-summary-score { text-align: left; }
 }
 
 .report-header {

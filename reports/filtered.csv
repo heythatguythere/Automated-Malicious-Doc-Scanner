@@ -1,0 +1,3 @@
+filename,detected_format,score,verdict,size_bytes,md5,sha256,scanned_at
+high.pdf,pdf,51,HIGH RISK,690,12010d10e89dd4244949163125b27d9a,40f0628c8c49aeb20897e2bbd3f28d22a94d54dcdef342242247a23afa68631e,2026-09-15T04:13:37.910246+00:00
+medium.pdf,pdf,28,MEDIUM RISK,576,a04ae69e015976ebe37cbdecade159ea,ecd814b253d08b14431573fcbac19a6853a3f1d1f7087908e5ec1deeffff25d2,2026-09-15T04:13:37.910860+00:00

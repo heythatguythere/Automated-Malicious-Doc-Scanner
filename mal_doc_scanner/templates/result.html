@@ -54,13 +54,17 @@
         Macro Analysis — {{ "Macros detected" if a.has_macros else "No macros found" }}
       </div>
       {% if a.findings %}
-        {% for f in a.findings %}
-          <div class="finding">
-            <b>[{{ f.type }}]</b> {{ f.keyword }}
-            <span class="weight">+{{ f.weight }}</span><br>
-            {{ f.description }}
-          </div>
-        {% endfor %}
+        <details open>
+          <summary>Evidence groups</summary>
+          {% for f in a.findings %}
+            <div class="finding">
+              <b>[{{ f.type }}]</b> {{ f.keyword }}
+              <span class="weight">+{{ f.weight }}</span>
+              <span class="confidence confidence-{{ f.confidence|default('low') }}">{{ f.confidence|default('low')|upper }}</span><br>
+              {{ f.description }}
+            </div>
+          {% endfor %}
+        </details>
       {% elif a.has_macros %}
         <div class="finding">Macros present but no suspicious patterns were identified.</div>
       {% else %}
@@ -77,9 +81,12 @@
     {% if a.suspicious_objects is defined %}
       <div class="section-title">Embedded Object Analysis — {{ a.embedded_objects }} object(s) found</div>
       {% if a.suspicious_objects %}
-        {% for obj in a.suspicious_objects %}
-          <div class="finding"><b>{{ obj.class_name }}</b><br>{{ obj.note }}</div>
-        {% endfor %}
+        <details open>
+          <summary>Embedded object evidence</summary>
+          {% for obj in a.suspicious_objects %}
+            <div class="finding"><b>{{ obj.class_name }}</b><br>{{ obj.note }}</div>
+          {% endfor %}
+        </details>
       {% else %}
         <div class="finding">No high-risk embedded object types detected.</div>
       {% endif %}
@@ -88,13 +95,17 @@
     {% if a.object_count is defined %}
       <div class="section-title">PDF Structure Analysis — {{ a.object_count }} object(s) in file</div>
       {% if a.indicators %}
-        {% for ind in a.indicators %}
-          <div class="finding">
-            <b>{{ ind.name }}</b> ×{{ ind.count }}
-            <span class="weight">+{{ ind.weight }}</span><br>
-            {{ ind.description }}
-          </div>
-        {% endfor %}
+        <details open>
+          <summary>PDF evidence</summary>
+          {% for ind in a.indicators %}
+            <div class="finding">
+              <b>{{ ind.name }}</b> ×{{ ind.count }}
+              <span class="weight">+{{ ind.weight }}</span>
+              <span class="confidence confidence-{{ ind.confidence|default('low') }}">{{ ind.confidence|default('low')|upper }}</span><br>
+              {{ ind.description }}
+            </div>
+          {% endfor %}
+        </details>
       {% else %}
         <div class="finding">No suspicious structural indicators detected.</div>
       {% endif %}

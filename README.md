@@ -124,6 +124,13 @@ python cli.py scan samples/safe_suspicious_rtf.rtf --json report.json --html rep
 python cli.py scan-dir samples --json bulk_report.json --html bulk_dashboard.html
 ```
 
+Bulk scans can be filtered before JSON, HTML, and CSV exports are written:
+
+```bash
+python cli.py scan-dir samples/risk_samples --min-score 25 --max-score 60 --format pdf --json reports/filtered.json --html reports/filtered.html --csv reports/filtered.csv
+```
+
+Available filters are `--min-score`, `--max-score`, `--verdict`, and `--format`.
 ### Start the web UI
 
 ```bash
@@ -136,7 +143,7 @@ Then open:
 http://127.0.0.1:5000
 ```
 
-Upload a file through the browser and review the scored findings.
+Upload one or multiple files through the browser and review either a detailed single-file report or a bulk results summary. The web uploader accepts up to 20 files per request and applies the 25 MB request limit.
 
 ## Risk scoring model
 
@@ -188,6 +195,28 @@ Run the project test suite:
 python -m unittest discover -s tests -v
 ```
 
+## Demo risk tiers
+
+The repository includes a sample set under [samples/risk_samples](samples/risk_samples) that demonstrates the full score spectrum:
+
+- clean PDF
+- clean RTF
+- low PDF
+- medium PDF
+- high PDF
+- critical PDF
+
+A generated bulk dashboard and report are also saved under [reports](reports) so you can inspect multiple score bands in one place.
+
+You can inspect them directly with:
+
+```bash
+python cli.py scan samples/risk_samples/clean.pdf
+python cli.py scan samples/risk_samples/low.pdf
+python cli.py scan samples/risk_samples/medium.pdf
+python cli.py scan samples/risk_samples/high.pdf
+python cli.py scan samples/risk_samples/critical.pdf
+```
 ## Example usage in automation
 
 The command-line interface exits with a non-zero code when suspicious findings reach a danger threshold, which makes it possible to use in triage scripts or CI-style checks.

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bulk Scan Dashboard</title>
+<style>
+ body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 32px; }
+ .wrap { max-width: 1100px; margin: 0 auto; }
+ .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px; }
+ .card { background: #111827; border: 1px solid #334155; border-radius: 12px; padding: 18px; }
+ .label { color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+ .value { font-size: 28px; font-weight: 700; margin-top: 8px; }
+ table { width: 100%; border-collapse: collapse; margin-top: 18px; }
+ th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #334155; }
+ th { color: #94a3b8; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Bulk Scan Dashboard</h1>
+    <div class="cards">
+      <div class="card"><div class="label">Total files</div><div class="value">2</div></div>
+      <div class="card"><div class="label">Clean</div><div class="value">0</div></div>
+      <div class="card"><div class="label">Low</div><div class="value">0</div></div>
+      <div class="card"><div class="label">Medium</div><div class="value">1</div></div>
+      <div class="card"><div class="label">High</div><div class="value">1</div></div>
+      <div class="card"><div class="label">Critical</div><div class="value">0</div></div>
+    </div>
+
+    <table>
+      <thead><tr><th>Filename</th><th>Format</th><th>Score</th><th>Verdict</th></tr></thead>
+      <tbody><tr><td>high.pdf</td><td>pdf</td><td>51</td><td>HIGH RISK</td></tr><tr><td>medium.pdf</td><td>pdf</td><td>28</td><td>MEDIUM RISK</td></tr></tbody>
+    </table>
+  </div>
+</body>
+</html>

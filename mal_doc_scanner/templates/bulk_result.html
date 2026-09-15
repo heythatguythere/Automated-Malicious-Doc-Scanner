@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bulk Scan Results</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="page-shell">
+  <div class="header-row">
+    <div class="brand-mark">
+      <span class="brand-dot"></span>
+      <div><div class="brand-title">MalDoc Scanner</div><div class="brand-subtitle">Bulk scan report</div></div>
+    </div>
+  </div>
+  <main class="panel report-panel">
+    <div class="report-header">
+      <div><div class="report-name">Bulk scan results</div><div class="report-format">{{ reports|length }} FILES PROCESSED</div></div>
+    </div>
+    <div class="bulk-summary">
+      <div class="bulk-stat"><strong>{{ reports|length }}</strong><span>Total files</span></div>
+      <div class="bulk-stat"><strong>{{ reports|selectattr('score', 'defined')|selectattr('score', 'equalto', 0)|list|length }}</strong><span>Clean</span></div>
+      <div class="bulk-stat"><strong>{{ reports|selectattr('score', 'defined')|selectattr('score', 'ge', 25)|list|length }}</strong><span>Risky</span></div>
+      <div class="bulk-stat"><strong>{{ reports|selectattr('error', 'defined')|list|length }}</strong><span>Errors</span></div>
+    </div>
+    <div class="bulk-reports">
+      {% for report in reports %}
+        {% if report.error %}
+          <div class="finding bulk-error"><b>{{ report.filename }}</b><br>{{ report.error }}</div>
+        {% else %}
+          <details class="bulk-report">
+            <summary>
+              <span>{{ report.filename }}</span>
+              <span class="bulk-summary-score">
+                {{ report.detected_format|upper }} ·
+                <span class="badge" style="background: {{ report.verdict_color }};">{{ report.score }}/100</span>
+                {{ report.verdict }}
+              </span>
+            </summary>
+            <div class="bulk-report-body">
+              <table class="meta-table">
+                <tr><th>Size</th><td>{{ report.size_bytes }} bytes</td></tr>
+                <tr><th>MD5</th><td class="mono">{{ report.md5 }}</td></tr>
+                <tr><th>SHA256</th><td class="mono">{{ report.sha256 }}</td></tr>
+                <tr><th>Scanned at (UTC)</th><td>{{ report.scanned_at }}</td></tr>
+              </table>
+              {% set analysis = report.analysis or {} %}
+              {% if analysis.errors %}
+                <div class="section-title">Notes</div>
+                {% for error in analysis.errors %}<div class="finding">{{ error }}</div>{% endfor %}
+              {% endif %}
+              {% if analysis.findings is defined %}
+                <div class="section-title">Macro and indicator analysis</div>
+                {% for finding in analysis.findings %}
+                  <div class="finding">
+                    <b>[{{ finding.type }}]</b> {{ finding.keyword }}
+                    <span class="weight">+{{ finding.weight }}</span>
+                    <span class="confidence confidence-{{ finding.confidence|default('low') }}">{{ finding.confidence|default('low')|upper }}</span><br>
+                    {{ finding.description }}
+                  </div>
+                {% else %}
+                  <div class="finding">No suspicious macro indicators detected.</div>
+                {% endfor %}
+              {% endif %}
+              {% if analysis.suspicious_objects is defined %}
+                <div class="section-title">Embedded Object Analysis</div>
+                {% for object in analysis.suspicious_objects %}<div class="finding"><b>{{ object.class_name }}</b><br>{{ object.note }}</div>{% else %}<div class="finding">No suspicious embedded objects detected.</div>{% endfor %}
+              {% endif %}
+              {% if analysis.indicators is defined %}
+                <div class="section-title">PDF Structure Analysis</div>
+                {% for indicator in analysis.indicators %}
+                  <div class="finding"><b>{{ indicator.name }}</b> ×{{ indicator.count }} <span class="weight">+{{ indicator.weight }}</span> <span class="confidence confidence-{{ indicator.confidence|default('low') }}">{{ indicator.confidence|default('low')|upper }}</span><br>{{ indicator.description }}</div>
+                {% else %}<div class="finding">No suspicious PDF indicators detected.</div>{% endfor %}
+              {% endif %}
+              {% if analysis.iocs %}
+                <div class="section-title">Extracted IOCs</div>
+                {% for ioc in analysis.iocs|unique %}<div class="finding mono">{{ ioc }}</div>{% endfor %}
+              {% endif %}
+            </div>
+          </details>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <a class="back" href="{{ url_for('index') }}">← Scan more documents</a>
+  </main>
+</div>
+</body>
+</html>

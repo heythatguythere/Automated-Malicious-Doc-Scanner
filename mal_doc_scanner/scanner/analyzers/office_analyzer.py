@@ -95,6 +95,7 @@ def analyze_office_file(filepath: str) -> dict:
                         "keyword": keyword,
                         "description": description,
                         "weight": weight,
+                        "confidence": "high" if weight >= 20 else "medium" if weight >= 8 else "low",
                     })
 
                     seen_keywords.add(keyword)

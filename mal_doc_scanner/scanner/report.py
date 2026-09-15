@@ -6,6 +6,7 @@ exporter, and a standalone HTML report generator (independent of the
 Flask template, so the CLI can produce a shareable single-file report).
 """
 
+import csv
 import json
 
 
@@ -87,6 +88,38 @@ def print_report(report: dict) -> None:
 def save_json_report(report: dict, path: str) -> None:
     with open(path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)
+
+
+def save_csv_report(reports: list, path: str) -> None:
+    fieldnames = ["filename", "detected_format", "score", "verdict", "size_bytes", "md5", "sha256", "scanned_at"]
+    with open(path, "w", newline="", encoding="utf-8") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for report in reports:
+            writer.writerow({
+                "filename": report.get("filename", ""),
+                "detected_format": report.get("detected_format", ""),
+                "score": report.get("score", 0),
+                "verdict": report.get("verdict", ""),
+                "size_bytes": report.get("size_bytes", 0),
+                "md5": report.get("md5", ""),
+                "sha256": report.get("sha256", ""),
+                "scanned_at": report.get("scanned_at", ""),
+            })
+
+
+def filter_reports(reports: list, *, min_score: int = 0, max_score: int = 100, verdict: str | None = None, format_filter: str | None = None) -> list:
+    filtered = []
+    for report in reports:
+        score = int(report.get("score", 0))
+        if score < min_score or score > max_score:
+            continue
+        if verdict and str(report.get("verdict", "")).upper() != verdict.upper():
+            continue
+        if format_filter and str(report.get("detected_format", "")).lower() != format_filter.lower():
+            continue
+        filtered.append(report)
+    return filtered
 
 
 def generate_directory_dashboard(reports: list, title: str = "Bulk Scan Dashboard") -> str:

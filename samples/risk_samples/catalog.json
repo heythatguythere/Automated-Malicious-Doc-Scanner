@@ -1,0 +1,8 @@
+{
+  "clean": {"file": "clean.pdf", "band": [0, 0]},
+  "clean_rtf": {"file": "clean.rtf", "band": [0, 0]},
+  "low": {"file": "low.pdf", "band": [1, 24]},
+  "medium": {"file": "medium.pdf", "band": [25, 49]},
+  "high": {"file": "high.pdf", "band": [50, 74]},
+  "critical": {"file": "critical.pdf", "band": [75, 100]}
+}

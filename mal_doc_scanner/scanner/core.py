@@ -88,7 +88,7 @@ def scan_file(filepath: str) -> dict:
     return report
 
 
-def scan_directory(dirpath: str, extensions=None, html_path=None) -> list:
+def scan_directory(dirpath: str, extensions=None, html_path=None, csv_path=None) -> list:
     exts = extensions or SUPPORTED_EXTENSIONS
     results = []
     for root, _dirs, files in os.walk(dirpath):
@@ -106,5 +106,12 @@ def scan_directory(dirpath: str, extensions=None, html_path=None) -> list:
         except ImportError:  # pragma: no cover - direct execution fallback
             from scanner.report import save_directory_dashboard
         save_directory_dashboard(results, html_path)
+
+    if csv_path:
+        try:
+            from mal_doc_scanner.scanner.report import save_csv_report
+        except ImportError:  # pragma: no cover - direct execution fallback
+            from scanner.report import save_csv_report
+        save_csv_report(results, csv_path)
 
     return results

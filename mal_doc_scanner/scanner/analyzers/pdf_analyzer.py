@@ -36,6 +36,7 @@ def analyze_pdf_file(filepath: str) -> dict:
     result = {
         "file_type": "PDF Document",
         "indicators": [],
+        "findings": [],
         "score": 0,
         "object_count": 0,
         "errors": [],
@@ -57,13 +58,23 @@ def analyze_pdf_file(filepath: str) -> dict:
             if matches:
                 count = len(matches)
                 bonus = min(count - 1, 5)  # repeated occurrences add a little extra weight, capped
+                indicator_weight = weight + bonus
                 result["indicators"].append({
                     "name": name,
                     "count": count,
-                    "weight": weight + bonus,
+                    "weight": indicator_weight,
                     "description": desc,
+                    "confidence": "high" if indicator_weight >= 20 else "medium" if indicator_weight >= 8 else "low",
                 })
-                result["score"] += weight + bonus
+                result["findings"].append({
+                    "type": "PDF Indicator",
+                    "keyword": name,
+                    "count": count,
+                    "weight": indicator_weight,
+                    "description": desc,
+                    "confidence": "high" if indicator_weight >= 20 else "medium" if indicator_weight >= 8 else "low",
+                })
+                result["score"] += indicator_weight
                 found_names.add(name)
 
         # Chained decode filters (e.g. /Filter [/ASCIIHexDecode /FlateDecode /RunLengthDecode])
@@ -75,6 +86,15 @@ def analyze_pdf_file(filepath: str) -> dict:
                 "count": len(chained_filters),
                 "weight": 10,
                 "description": "Multiple chained decode filters on a single stream - common obfuscation technique",
+                "confidence": "medium",
+            })
+            result["findings"].append({
+                "type": "PDF Indicator",
+                "keyword": "ChainedDecodeFilters",
+                "count": len(chained_filters),
+                "weight": 10,
+                "description": "Multiple chained decode filters on a single stream - common obfuscation technique",
+                "confidence": "medium",
             })
             result["score"] += 10
 
@@ -85,6 +105,15 @@ def analyze_pdf_file(filepath: str) -> dict:
                 "count": 1,
                 "weight": 12,
                 "description": "OpenAction combined with JavaScript gives the PDF an immediate automatic code execution path.",
+                "confidence": "high",
+            })
+            result["findings"].append({
+                "type": "PDF Indicator",
+                "keyword": "OpenAction+JS",
+                "count": 1,
+                "weight": 12,
+                "description": "OpenAction combined with JavaScript gives the PDF an immediate automatic code execution path.",
+                "confidence": "high",
             })
 
         # Escalate if JavaScript is combined with an execution/exfiltration vector -
@@ -98,6 +127,16 @@ def analyze_pdf_file(filepath: str) -> dict:
                 "weight": 15,
                 "description": "JavaScript combined with a launch/embedded-file/submit vector - "
                                 "a common weaponized-PDF pattern",
+                "confidence": "high",
+            })
+            result["findings"].append({
+                "type": "PDF Indicator",
+                "keyword": "JS+ExecutionVectorCombo",
+                "count": 1,
+                "weight": 15,
+                "description": "JavaScript combined with a launch/embedded-file/submit vector - "
+                                "a common weaponized-PDF pattern",
+                "confidence": "high",
             })
 
         # Detect automatic PDF behavior that is especially dangerous even without explicit JavaScript:
@@ -108,6 +147,15 @@ def analyze_pdf_file(filepath: str) -> dict:
                 "count": 1,
                 "weight": 10,
                 "description": "Auto-run action paired with an embedded file or launch target is a classic weaponized PDF pattern.",
+                "confidence": "high",
+            })
+            result["findings"].append({
+                "type": "PDF Indicator",
+                "keyword": "AutoExecute+PayloadVector",
+                "count": 1,
+                "weight": 10,
+                "description": "Auto-run action paired with an embedded file or launch target is a classic weaponized PDF pattern.",
+                "confidence": "high",
             })
 
         result["score"] = min(result["score"], 100)

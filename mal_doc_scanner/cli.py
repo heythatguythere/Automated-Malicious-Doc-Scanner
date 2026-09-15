@@ -23,10 +23,10 @@ if __package__ in (None, ""):
 
 try:
     from .scanner.core import scan_file, scan_directory
-    from .scanner.report import print_report, save_json_report, save_html_report
+    from .scanner.report import print_report, save_json_report, save_html_report, filter_reports
 except ImportError:  # pragma: no cover - direct script execution fallback
     from scanner.core import scan_file, scan_directory
-    from scanner.report import print_report, save_json_report, save_html_report
+    from scanner.report import print_report, save_json_report, save_html_report, filter_reports
 
 
 def main():
@@ -41,11 +41,17 @@ def main():
     p_file.add_argument("path", help="Path to the document to scan")
     p_file.add_argument("--json", help="Save JSON report to this path")
     p_file.add_argument("--html", help="Save HTML report to this path")
+    p_file.add_argument("--csv", help="Save CSV report to this path")
 
     p_dir = sub.add_parser("scan-dir", help="Scan all supported files in a directory (recursive)")
     p_dir.add_argument("path", help="Directory to scan")
     p_dir.add_argument("--json", help="Save combined JSON report to this path")
     p_dir.add_argument("--html", help="Save a bulk dashboard HTML report to this path")
+    p_dir.add_argument("--csv", help="Save bulk CSV report to this path")
+    p_dir.add_argument("--min-score", type=int, default=0, help="Include only reports at or above this score")
+    p_dir.add_argument("--max-score", type=int, default=100, help="Include only reports at or below this score")
+    p_dir.add_argument("--verdict", help="Include only reports with this verdict")
+    p_dir.add_argument("--format", dest="format_filter", help="Include only this detected format")
 
     args = parser.parse_args()
 
@@ -61,6 +67,22 @@ def main():
         if args.html:
             save_html_report(report, args.html)
             print(f"[+] HTML report saved to {args.html}")
+        if args.csv:
+            import csv as _csv
+            with open(args.csv, "w", newline="", encoding="utf-8") as fh:
+                writer = _csv.DictWriter(fh, fieldnames=["filename", "detected_format", "score", "verdict", "size_bytes", "md5", "sha256", "scanned_at"])
+                writer.writeheader()
+                writer.writerow({
+                    "filename": report.get("filename", ""),
+                    "detected_format": report.get("detected_format", ""),
+                    "score": report.get("score", 0),
+                    "verdict": report.get("verdict", ""),
+                    "size_bytes": report.get("size_bytes", 0),
+                    "md5": report.get("md5", ""),
+                    "sha256": report.get("sha256", ""),
+                    "scanned_at": report.get("scanned_at", ""),
+                })
+            print(f"[+] CSV report saved to {args.csv}")
 
         # Non-zero exit code when risk is detected - useful for CI/automation hooks
         sys.exit(1 if report["score"] >= 25 else 0)
@@ -69,9 +91,16 @@ def main():
         if not os.path.isdir(args.path):
             print(f"Error: directory not found: {args.path}")
             sys.exit(1)
-        reports = scan_directory(args.path, html_path=args.html)
+        reports = scan_directory(args.path)
+        filtered_reports = filter_reports(
+            reports,
+            min_score=args.min_score,
+            max_score=args.max_score,
+            verdict=args.verdict,
+            format_filter=args.format_filter,
+        )
         any_risky = False
-        for r in reports:
+        for r in filtered_reports:
             print_report(r)
             print("-" * 70)
             if r.get("score", 0) >= 25:
@@ -81,15 +110,33 @@ def main():
                 json.dump({
                     "generated_at": __import__("datetime").datetime.utcnow().isoformat() + "Z",
                     "summary": {
-                        "total_files": len(reports),
-                        "risky_files": sum(1 for r in reports if r.get("score", 0) >= 25),
-                        "max_score": max((r.get("score", 0) for r in reports), default=0),
+                        "total_files": len(filtered_reports),
+                        "risky_files": sum(1 for r in filtered_reports if r.get("score", 0) >= 25),
+                        "max_score": max((r.get("score", 0) for r in filtered_reports), default=0),
                     },
-                    "files": reports,
+                    "filters": {
+                        "min_score": args.min_score,
+                        "max_score": args.max_score,
+                        "verdict": args.verdict,
+                        "format": args.format_filter,
+                    },
+                    "files": filtered_reports,
                 }, f, indent=2, ensure_ascii=False)
             print(f"\n[+] Combined JSON report saved to {args.json}")
         if args.html:
+            try:
+                from .scanner.report import save_directory_dashboard
+            except ImportError:  # pragma: no cover - direct script execution fallback
+                from scanner.report import save_directory_dashboard
+            save_directory_dashboard(filtered_reports, args.html)
             print(f"\n[+] Bulk dashboard saved to {args.html}")
+        if args.csv:
+            try:
+                from .scanner.report import save_csv_report
+            except ImportError:  # pragma: no cover - direct script execution fallback
+                from scanner.report import save_csv_report
+            save_csv_report(filtered_reports, args.csv)
+            print(f"[+] Bulk CSV report saved to {args.csv}")
         sys.exit(1 if any_risky else 0)
 
 

@@ -15,6 +15,14 @@ VERDICT_BANDS = [
 ]
 
 
+def confidence_from_weight(weight: int) -> str:
+    if weight >= 20:
+        return "high"
+    if weight >= 8:
+        return "medium"
+    return "low"
+
+
 def compute_verdict(score: int):
     score = max(0, min(100, int(score)))
     for lo, hi, label, color in VERDICT_BANDS:

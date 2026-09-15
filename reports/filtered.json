@@ -1,0 +1,148 @@
+{
+  "generated_at": "2026-09-15T04:13:37.914769Z",
+  "summary": {
+    "total_files": 2,
+    "risky_files": 2,
+    "max_score": 51
+  },
+  "filters": {
+    "min_score": 25,
+    "max_score": 60,
+    "verdict": null,
+    "format": null
+  },
+  "files": [
+    {
+      "filename": "high.pdf",
+      "size_bytes": 690,
+      "md5": "12010d10e89dd4244949163125b27d9a",
+      "sha256": "40f0628c8c49aeb20897e2bbd3f28d22a94d54dcdef342242247a23afa68631e",
+      "scanned_at": "2026-09-15T04:13:37.910246+00:00",
+      "detected_format": "pdf",
+      "analysis": {
+        "file_type": "PDF Document",
+        "indicators": [
+          {
+            "name": "JavaScript",
+            "count": 2,
+            "weight": 16,
+            "description": "Embedded JavaScript object",
+            "confidence": "medium"
+          },
+          {
+            "name": "JS",
+            "count": 1,
+            "weight": 12,
+            "description": "Embedded JavaScript reference",
+            "confidence": "medium"
+          },
+          {
+            "name": "SubmitForm",
+            "count": 2,
+            "weight": 8,
+            "description": "Form-submission action - can be used to exfiltrate data to a remote URL",
+            "confidence": "medium"
+          },
+          {
+            "name": "JS+ExecutionVectorCombo",
+            "count": 1,
+            "weight": 15,
+            "description": "JavaScript combined with a launch/embedded-file/submit vector - a common weaponized-PDF pattern",
+            "confidence": "high"
+          }
+        ],
+        "findings": [
+          {
+            "type": "PDF Indicator",
+            "keyword": "JavaScript",
+            "count": 2,
+            "weight": 16,
+            "description": "Embedded JavaScript object",
+            "confidence": "medium"
+          },
+          {
+            "type": "PDF Indicator",
+            "keyword": "JS",
+            "count": 1,
+            "weight": 12,
+            "description": "Embedded JavaScript reference",
+            "confidence": "medium"
+          },
+          {
+            "type": "PDF Indicator",
+            "keyword": "SubmitForm",
+            "count": 2,
+            "weight": 8,
+            "description": "Form-submission action - can be used to exfiltrate data to a remote URL",
+            "confidence": "medium"
+          },
+          {
+            "type": "PDF Indicator",
+            "keyword": "JS+ExecutionVectorCombo",
+            "count": 1,
+            "weight": 15,
+            "description": "JavaScript combined with a launch/embedded-file/submit vector - a common weaponized-PDF pattern",
+            "confidence": "high"
+          }
+        ],
+        "score": 51,
+        "object_count": 6,
+        "errors": []
+      },
+      "score": 51,
+      "verdict": "HIGH RISK",
+      "verdict_color": "#c62828"
+    },
+    {
+      "filename": "medium.pdf",
+      "size_bytes": 576,
+      "md5": "a04ae69e015976ebe37cbdecade159ea",
+      "sha256": "ecd814b253d08b14431573fcbac19a6853a3f1d1f7087908e5ec1deeffff25d2",
+      "scanned_at": "2026-09-15T04:13:37.910860+00:00",
+      "detected_format": "pdf",
+      "analysis": {
+        "file_type": "PDF Document",
+        "indicators": [
+          {
+            "name": "JavaScript",
+            "count": 2,
+            "weight": 16,
+            "description": "Embedded JavaScript object",
+            "confidence": "medium"
+          },
+          {
+            "name": "JS",
+            "count": 1,
+            "weight": 12,
+            "description": "Embedded JavaScript reference",
+            "confidence": "medium"
+          }
+        ],
+        "findings": [
+          {
+            "type": "PDF Indicator",
+            "keyword": "JavaScript",
+            "count": 2,
+            "weight": 16,
+            "description": "Embedded JavaScript object",
+            "confidence": "medium"
+          },
+          {
+            "type": "PDF Indicator",
+            "keyword": "JS",
+            "count": 1,
+            "weight": 12,
+            "description": "Embedded JavaScript reference",
+            "confidence": "medium"
+          }
+        ],
+        "score": 28,
+        "object_count": 5,
+        "errors": []
+      },
+      "score": 28,
+      "verdict": "MEDIUM RISK",
+      "verdict_color": "#e65100"
+    }
+  ]
+}
