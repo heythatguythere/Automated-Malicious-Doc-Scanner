@@ -2,6 +2,9 @@
 
 A static-analysis security tool for identifying suspicious indicators in Microsoft Office documents, PDF files, and RTF content. It calculates a risk score from 0 to 100, highlights the most relevant findings, and produces both console and file-based reports.
 
+Repository: https://github.com/heythatguythere/Automated-Malicious-Doc-Scanner
+Live demo: https://automated-malicious-doc-scanner.onrender.com/
+
 This project is designed for defensive use: it inspects suspicious files without executing embedded macros or opening documents in Office or PDF viewers.
 
 ## Features
@@ -76,8 +79,8 @@ mal_doc_scanner/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/mal_doc_scanner.git
-cd mal_doc_scanner
+git clone https://github.com/heythatguythere/Automated-Malicious-Doc-Scanner.git
+cd Automated-Malicious-Doc-Scanner
 ```
 
 ### 2. Create a virtual environment
