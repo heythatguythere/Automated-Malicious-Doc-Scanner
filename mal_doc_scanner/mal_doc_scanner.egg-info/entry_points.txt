@@ -1,0 +1,2 @@
+[console_scripts]
+mds-scan = mal_doc_scanner.cli:main

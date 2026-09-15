@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mal-doc-scanner"
+version = "0.1.0"
+description = "Static analysis scanner for suspicious Office, PDF, and RTF documents"
+readme = "mal_doc_scanner/README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "oletools>=0.60.1",
+    "Flask>=3.0.0",
+]
+
+[project.scripts]
+mds-scan = "mal_doc_scanner.cli:main"
+
+[tool.setuptools]
+packages = ["mal_doc_scanner", "mal_doc_scanner.scanner", "mal_doc_scanner.scanner.analyzers"]

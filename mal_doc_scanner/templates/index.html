@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MalDoc Scanner</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="page-shell">
+  <div class="header-row">
+    <div class="brand-mark">
+      <span class="brand-dot"></span>
+      <div>
+        <div class="brand-title">MalDoc Scanner</div>
+        <div class="brand-subtitle">Static macro and exploit-indicator analysis</div>
+      </div>
+    </div>
+  </div>
+
+  <main class="panel">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for m in messages %}
+          <div class="flash">{{ m }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="hero-copy">
+      <h1>Scan suspicious document files before they reach the user.</h1>
+      <p>Checks for Office macro behaviors, malicious RTF objects, and weaponized PDF execution patterns with a static 0–100 risk model.</p>
+    </div>
+
+    <form action="{{ url_for('scan') }}" method="post" enctype="multipart/form-data" class="upload-form">
+      <div class="dropzone" id="dropzone">
+        <div class="dropzone-inner">
+          <div class="drop-icon">⇩</div>
+          <p>Drop a document here or click to browse</p>
+          <input type="file" name="document" id="fileInput" required>
+        </div>
+      </div>
+      <button type="submit">Scan Document</button>
+    </form>
+
+    <div class="supported">
+      Supported formats: .doc .docx .docm &middot; .xls .xlsx .xlsm &middot; .ppt .pptx .pptm &middot; .rtf &middot; .pdf
+      <span aria-hidden="true">•</span>
+      Max size: 25 MB
+    </div>
+  </main>
+</div>
+
+<script>
+  const dz = document.getElementById('dropzone');
+  const input = document.getElementById('fileInput');
+
+  ['dragenter', 'dragover'].forEach(evt => {
+    dz.addEventListener(evt, e => {
+      e.preventDefault();
+      dz.classList.add('drag');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach(evt => {
+    dz.addEventListener(evt, e => {
+      e.preventDefault();
+      dz.classList.remove('drag');
+    });
+  });
+
+  dz.addEventListener('drop', e => {
+    if (e.dataTransfer && e.dataTransfer.files.length) {
+      input.files = e.dataTransfer.files;
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+{
+  "generated_at": "2026-09-15T03:43:01.216762Z",
+  "summary": {
+    "total_files": 2,
+    "risky_files": 2,
+    "max_score": 100
+  },
+  "files": [
+    {
+      "filename": "safe_suspicious_pdf.pdf",
+      "size_bytes": 816,
+      "md5": "3a2cfec40e522020d1fb0906432dcb53",
+      "sha256": "882e5706b8ce8ef0dcefd673c852140067566e52efc636939e79ca9c883b2d0f",
+      "scanned_at": "2026-09-15T03:43:01.214585+00:00",
+      "detected_format": "pdf",
+      "analysis": {
+        "file_type": "PDF Document",
+        "indicators": [
+          {
+            "name": "OpenAction",
+            "count": 1,
+            "weight": 12,
+            "description": "Action set to run automatically when the document is opened"
+          },
+          {
+            "name": "JavaScript",
+            "count": 2,
+            "weight": 16,
+            "description": "Embedded JavaScript object"
+          },
+          {
+            "name": "JS",
+            "count": 1,
+            "weight": 12,
+            "description": "Embedded JavaScript reference"
+          },
+          {
+            "name": "Launch",
+            "count": 1,
+            "weight": 28,
+            "description": "Launch action - capable of executing external programs/files"
+          },
+          {
+            "name": "OpenAction+JS",
+            "count": 1,
+            "weight": 12,
+            "description": "OpenAction combined with JavaScript gives the PDF an immediate automatic code execution path."
+          },
+          {
+            "name": "JS+ExecutionVectorCombo",
+            "count": 1,
+            "weight": 15,
+            "description": "JavaScript combined with a launch/embedded-file/submit vector - a common weaponized-PDF pattern"
+          },
+          {
+            "name": "AutoExecute+PayloadVector",
+            "count": 1,
+            "weight": 10,
+            "description": "Auto-run action paired with an embedded file or launch target is a classic weaponized PDF pattern."
+          }
+        ],
+        "score": 100,
+        "object_count": 7,
+        "errors": []
+      },
+      "score": 100,
+      "verdict": "CRITICAL RISK",
+      "verdict_color": "#8e0000"
+    },
+    {
+      "filename": "safe_suspicious_rtf.rtf",
+      "size_bytes": 187,
+      "md5": "564e4ccf9a98df9a76ea72ce04a77fa0",
+      "sha256": "44e9781f67237aac37bf205acb5d06a4cc97c58c16035ba784e12156ce8b7cc3",
+      "scanned_at": "2026-09-15T03:43:01.215144+00:00",
+      "detected_format": "rtf",
+      "analysis": {
+        "file_type": "RTF Document",
+        "embedded_objects": 0,
+        "suspicious_objects": [
+          {
+            "index": null,
+            "class_name": "RTF raw marker",
+            "is_ole": true,
+            "is_package": true,
+            "note": "OLE Package object - frequently abused to smuggle executables, scripts, or batch files inside a document (matched 1 time(s))"
+          },
+          {
+            "index": null,
+            "class_name": "RTF raw marker",
+            "is_ole": true,
+            "is_package": false,
+            "note": "Embedded OLE object or raw object payload in the RTF stream (matched 1 time(s))"
+          }
+        ],
+        "score": 36,
+        "errors": []
+      },
+      "score": 36,
+      "verdict": "MEDIUM RISK",
+      "verdict_color": "#e65100"
+    }
+  ]
+}

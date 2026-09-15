@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scan Result - {{ report.filename }}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="page-shell">
+  <div class="header-row">
+    <div class="brand-mark">
+      <span class="brand-dot"></span>
+      <div>
+        <div class="brand-title">MalDoc Scanner</div>
+        <div class="brand-subtitle">Scan report</div>
+      </div>
+    </div>
+  </div>
+
+  <main class="panel report-panel">
+    <div class="report-header">
+      <div>
+        <div class="report-name">{{ report.filename }}</div>
+        <div class="report-format">{{ report.detected_format|upper }}</div>
+      </div>
+      <span class="badge" style="background: {{ report.verdict_color }};">
+        {{ report.verdict }} • {{ report.score }}/100
+      </span>
+    </div>
+
+    <div class="score-bar-track">
+      <div class="score-bar-fill" style="width: {{ report.score }}%; background: {{ report.verdict_color }};"></div>
+    </div>
+
+    <table class="meta-table">
+      <tr><th>Size</th><td>{{ report.size_bytes }} bytes</td></tr>
+      <tr><th>MD5</th><td class="mono">{{ report.md5 }}</td></tr>
+      <tr><th>SHA256</th><td class="mono">{{ report.sha256 }}</td></tr>
+      <tr><th>Scanned at (UTC)</th><td>{{ report.scanned_at }}</td></tr>
+    </table>
+
+    {% set a = report.analysis %}
+
+    {% if a.errors %}
+      <div class="section-title">Notes</div>
+      {% for e in a.errors %}
+        <div class="finding">{{ e }}</div>
+      {% endfor %}
+    {% endif %}
+
+    {% if a.findings is defined %}
+      <div class="section-title">
+        Macro Analysis — {{ "Macros detected" if a.has_macros else "No macros found" }}
+      </div>
+      {% if a.findings %}
+        {% for f in a.findings %}
+          <div class="finding">
+            <b>[{{ f.type }}]</b> {{ f.keyword }}
+            <span class="weight">+{{ f.weight }}</span><br>
+            {{ f.description }}
+          </div>
+        {% endfor %}
+      {% elif a.has_macros %}
+        <div class="finding">Macros present but no suspicious patterns were identified.</div>
+      {% else %}
+        <div class="finding">This document does not contain VBA/XLM macros.</div>
+      {% endif %}
+      {% if a.iocs %}
+        <div class="section-title">Extracted IOCs</div>
+        {% for ioc in a.iocs|unique %}
+          <div class="finding mono">{{ ioc }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endif %}
+
+    {% if a.suspicious_objects is defined %}
+      <div class="section-title">Embedded Object Analysis — {{ a.embedded_objects }} object(s) found</div>
+      {% if a.suspicious_objects %}
+        {% for obj in a.suspicious_objects %}
+          <div class="finding"><b>{{ obj.class_name }}</b><br>{{ obj.note }}</div>
+        {% endfor %}
+      {% else %}
+        <div class="finding">No high-risk embedded object types detected.</div>
+      {% endif %}
+    {% endif %}
+
+    {% if a.object_count is defined %}
+      <div class="section-title">PDF Structure Analysis — {{ a.object_count }} object(s) in file</div>
+      {% if a.indicators %}
+        {% for ind in a.indicators %}
+          <div class="finding">
+            <b>{{ ind.name }}</b> ×{{ ind.count }}
+            <span class="weight">+{{ ind.weight }}</span><br>
+            {{ ind.description }}
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="finding">No suspicious structural indicators detected.</div>
+      {% endif %}
+    {% endif %}
+
+    <a class="back" href="{{ url_for('index') }}">← Scan another document</a>
+  </main>
+</div>
+</body>
+</html>
